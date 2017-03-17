@@ -1,0 +1,18 @@
+---
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+
+  vars:
+    url: https://engine/ovirt-engine/api
+    username: admin@internal
+    password: 123456
+
+    #vars_prompt:
+    #va- name: dc_name
+    #va  prompt: "Please enter datacenter name"
+    #va  private: no
+    #va  when: dc_name is not defined
+
+  roles:
+    - ovirt-infra
