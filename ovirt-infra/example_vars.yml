@@ -124,10 +124,14 @@ aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
 users:
   - name: user1
     authz_name: internal-authz
+    password: 1234568
+    valid_to: "2018-01-01 00:00:00Z"
 
 user_groups:
   - name: group1
     authz_name: internal-authz
+    users:
+      - user2
 
 permissions:
   - state: present
