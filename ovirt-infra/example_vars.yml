@@ -120,6 +120,7 @@ host_networks:
 ###########################
 # Users & Groups
 ###########################
+aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
 users:
   - name: user1
     authz_name: internal-authz

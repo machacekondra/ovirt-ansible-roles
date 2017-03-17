@@ -179,6 +179,31 @@
 #########################
 ## User & groups magement
 #########################
+- name: Manage internal users
+  command: "{{ aaa_jdbc_prefix }}/ovirt-aaa-jdbc-tool user {{ (item.state is undefined or item.state == 'present') | ternary('add','delete') }} {{ item.name }}"
+  with_items:
+    - "{{ users | default([]) }}"
+  register: out_users
+  changed_when: "out_users.rc != 5 and out_users.rc != 4"
+  # 5 == user already exists
+  # 4 == no user to be removed
+  # 0 == all OK
+  failed_when: "out_users.rc != 5 and out_users.rc != 0 and out_users.rc != 4"
+  when: internal
+  tags:
+    - users
+
+- name: Manage internal groups
+  command: "{{ aaa_jdbc_prefix }}/ovirt-aaa-jdbc-tool group {{ (item.state is undefined or item.state == 'present') | ternary('add','delete') }} {{ item.name }}"
+  with_items:
+    - "{{ user_groups | default([]) }}"
+  register: out_groups
+  changed_when: "out_groups.rc != 5"
+  failed_when: "out_groups.rc != 5 and out_groups.rc != 0"
+  when: internal
+  tags:
+    - user_groups
+
 - name: Manage users
   ovirt_users:
     auth: "{{ ovirt_auth }}"
