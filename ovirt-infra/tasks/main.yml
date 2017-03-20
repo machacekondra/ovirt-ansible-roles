@@ -1,4 +1,7 @@
 ---
+#########################################
+# Auth - login
+#########################################
 - name: Login to oVirt
   ovirt_auth:
     url: "{{ engine_url }}"
@@ -9,6 +12,9 @@
   tags:
     - always
 
+#########################################
+# Datacenter
+#########################################
 - name: Add datacenter
   ovirt_datacenters:  
     auth: "{{ ovirt_auth }}"
@@ -20,6 +26,9 @@
   tags:
     - datacenters
 
+#########################################
+# Clusters
+#########################################
 - name: Add clusters
   ovirt_clusters:
     auth: "{{ ovirt_auth }}"
@@ -102,8 +111,22 @@
     poll_interval: "{{ item.poll_interval | default(15) }}"
   with_items:
     - "{{ hosts | default([]) }}"
+  async: 600
+  poll: 0
+  register: add_hosts
   tags:
     - hosts
+
+- name: Wait for hosts to be added
+  async_status: "jid={{ item.ansible_job_id }}"
+  register: job_result
+  with_items:
+    - "{{ add_hosts.results }}"
+  tags:
+    - hosts
+  until: job_result.finished
+  retries: 60
+  delay: 10
 
 - name: Setup host networks
   ovirt_host_networks:
@@ -125,8 +148,26 @@
 #################################################
 # Storages
 #################################################
-# In dict the default(omit) don't work:
-# https://github.com/ansible/ansible/issues/14130
+# First add master storage
+- name: Add master storage
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    state: "{{ item.value.state | default(omit) }}"
+    name: "{{ item.key }}"
+    domain_function: "{{ item.value.domain_function | default(omit) }}"
+    host: "{{ hosts[0].name }}"
+    data_center: "{{ data_center_name }}"
+    nfs: "{{ item.value.nfs | default(omit) }}"
+    iscsi: "{{ item.value.iscsi | default(omit) }}"
+    posixfs: "{{ item.value.posixfs | default(omit) }}"
+    glusterfs: "{{ item.value.glusterfs | default(omit) }}"
+    fcp: "{{ item.value.fcp | default(omit) }}"
+  with_dict: "{{ storages | default({}) }}"
+  when: item.value.master is defined and item.value.master
+  tags:
+    - storages
+
+# Next add rest of data storages
 - name: Add storages
   ovirt_storage_domains:
     auth: "{{ ovirt_auth }}"
@@ -141,6 +182,26 @@
     glusterfs: "{{ item.value.glusterfs | default(omit) }}"
     fcp: "{{ item.value.fcp | default(omit) }}"
   with_dict: "{{ storages | default({}) }}"
+  when: item.value.domain_function is not defined
+  tags:
+    - storages
+
+# Next add export/iso storages
+- name: Add export/iso storages
+  ovirt_storage_domains:
+    auth: "{{ ovirt_auth }}"
+    state: "{{ item.value.state | default(omit) }}"
+    name: "{{ item.key }}"
+    domain_function: "{{ item.value.domain_function | default(omit) }}"
+    host: "{{ hosts[0].name }}"
+    data_center: "{{ data_center_name }}"
+    nfs: "{{ item.value.nfs | default(omit) }}"
+    iscsi: "{{ item.value.iscsi | default(omit) }}"
+    posixfs: "{{ item.value.posixfs | default(omit) }}"
+    glusterfs: "{{ item.value.glusterfs | default(omit) }}"
+    fcp: "{{ item.value.fcp | default(omit) }}"
+  with_dict: "{{ storages | default({}) }}"
+  when: item.value.domain_function is defined
   tags:
     - storages
 
@@ -225,7 +286,7 @@
     - "{{ user_groups | default([]) }}"
     - users
   register: out_group_member
-  changed_when: "out_group_member.rc != 3"
+  changed_when: "out_group_member.rc != 3 "
   failed_when: "out_group_member.rc != 3 and out_group_member.rc != 0"
   when: internal
   tags:
@@ -273,6 +334,9 @@
   tags:
     - permissions
 
+#########################################
+# Auth - logout
+#########################################
 - name: Logout from oVirt
   ovirt_auth:
     state: absent

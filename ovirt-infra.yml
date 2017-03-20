@@ -1,18 +1,26 @@
 ---
 - name: oVirt infra
-  hosts: localhost
-  connection: local
+  hosts: engine
+  gather_facts: no
 
   vars:
     url: https://engine/ovirt-engine/api
     username: admin@internal
-    password: 123456
+    password: 123
 
-    #vars_prompt:
-    #va- name: dc_name
-    #va  prompt: "Please enter datacenter name"
-    #va  private: no
-    #va  when: dc_name is not defined
+    aaa_profile_type: 389ds
+    aaa_user: uid=user1,ou=People,dc=lago,dc=local
+    aaa_password: 123456
+    aaa_profile_name: testldap
+    aaa_ldap:
+      - 192.168.200.3
+
+    vars_prompt:
+      - name: data_center_name
+        prompt: "Please enter datacenter name"
+        private: no
+        when: data_center_name is not defined
 
   roles:
+    - { role: machacekondra.ovirt-aaa-ldap, tags: ['ldap'] }
     - ovirt-infra

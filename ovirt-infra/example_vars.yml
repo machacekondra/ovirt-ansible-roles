@@ -61,6 +61,7 @@ hosts:
 ###########################
 storages:
   nfs:
+    master: true
     state: present
     nfs:
       address: 192.168.200.3
@@ -74,11 +75,7 @@ storages:
       username: username
       password: password
       lun_id:
-        #- 360014053a530997ac7e48e7bde415edf
-        #- 3600140561410a08880d46f4b45ea6051
-         - 36001405b1ef29ced26c477499f66259e
-        # - 36001405bdb6381406ac4df38687d593a
-        # - 36001405bdbaeb364f0d4f3d8a7688447
+        - 36001405fb8d5778ba924c428385cc30f
   templates:
     domain_function: export
     nfs:
@@ -120,7 +117,7 @@ host_networks:
 ###########################
 # Users & Groups
 ###########################
-aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
+#aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
 users:
   - name: user1
     authz_name: internal-authz
@@ -131,7 +128,7 @@ user_groups:
   - name: group1
     authz_name: internal-authz
     users:
-      - user2
+      - user1
 
 permissions:
   - state: present
