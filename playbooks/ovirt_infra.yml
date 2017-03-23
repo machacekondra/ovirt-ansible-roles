@@ -1,10 +1,12 @@
 ---
 - name: oVirt infra
   hosts: engine
+  #hosts: localhost
+  #connection: local
   gather_facts: no
 
   vars_files:
-    ovirt-infra-vars.yml
+    - ovirt_infra_vars.yml
     
   pre_tasks:
     - name: Login to oVirt
@@ -18,14 +20,8 @@
         - always
 
   roles:
-    - ovirt-datacenters
-    - ovirt-clusters
-    - ovirt-hosts
-    - ovirt-networks
-    - ovirt-storages
-    - ovirt-aaa-jdbc
-    - ovirt-aaa-ldap
-    - ovirt-permissions
+    - ovirt-infra
+    - ovirt-image-template
 
   post_tasks:
     - name: Logout from oVirt

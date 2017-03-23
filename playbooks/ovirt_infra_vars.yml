@@ -5,7 +5,8 @@
 engine_url: https://engine/ovirt-engine/api
 engine_user: admin@internal
 engine_password: 123
-engine_insecure: true
+engine_cafile: /etc/pki/ovirt-engine/ca.pem
+engine_insecure: false
 
 ###########################
 # Common
@@ -21,27 +22,10 @@ data_center_name: mydatacenter
 clusters:
  - name: development
    cpu_type: Intel Conroe Family
-   description: Development cluster
-   ballooning: true
-   ksm: true
-   host_reason: false
-   vm_reason: false
-   memory_policy: server
-   migration_policy: post_copy
+   profile: development
  - name: production
    cpu_type: Intel Conroe Family
-   description: Production cluster
-   ballooning: false
-   ksm: false
-   host_reason: true
-   vm_reason: true
-   memory_policy: disabled
-   migration_policy: suspend_workload
-   scheduling_policy: evenly_distributed
-   ha_reservation: true
-   fence_enabled: true
-   fence_skip_if_connectivity_broken: true
-   fence_skip_if_sd_active: true
+   profile: production
 
 ###########################
 # Hosts
@@ -74,8 +58,7 @@ storages:
       address: 192.168.200.3
       username: username
       password: password
-      lun_id:
-        - 36001405fb8d5778ba924c428385cc30f
+      lun_id: 36001405c236fbeed27a4ceb8dcefc872
   templates:
     domain_function: export
     nfs:
