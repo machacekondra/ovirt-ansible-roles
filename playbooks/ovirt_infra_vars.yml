@@ -58,7 +58,7 @@ storages:
       address: 192.168.200.3
       username: username
       password: password
-      lun_id: 36001405c236fbeed27a4ceb8dcefc872
+      lun_id: 3600140551fcc8348ea74a99b6760fbb4
   templates:
     domain_function: export
     nfs:
@@ -137,3 +137,21 @@ permissions:
     role: UserRole
     object_type: cluster
     object_name: production
+
+
+##########################
+# VM infra
+##########################
+#qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2.xz
+#qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1608.qcow2
+image_path: /tmp/data
+qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+template_cluster: development
+template_name: centos7
+template_memory: 1GiB
+template_cpu: 1
+template_disk_size: 10GiB
+template_nics:
+  - name: nic1
+    profile_name: ovirtmgmt
+    interface: virtio

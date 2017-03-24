@@ -20,8 +20,9 @@
         - always
 
   roles:
-    - ovirt-infra
-    - ovirt-image-template
+    #- ovirt-infra
+    #- ovirt-image-template
+    - ovirt-virt-infra
 
   post_tasks:
     - name: Logout from oVirt

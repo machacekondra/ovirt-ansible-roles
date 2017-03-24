@@ -1,0 +1,116 @@
+---
+- name: Create master VMs
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    cluster: "{{ item.1.cluster }}"
+    template: "{{ item.1.template }}"
+    name: "{{ item.1.name }}_{{ item.0 }}"
+    memory: "{{ item.1.memory }}"
+    cpu_cores: "{{ item.1.cores }}"
+    high_availability: true
+    cloud_init:
+      nic_boot_protocol: dhcp
+      nic_on_boot: true
+      nic_name: eth0
+      host_name: "{{ item.1.name }}_{{ item.0 }}.{{ item.1.domain }}"
+      custom_script: |
+        yum_repos:
+          epel:
+            name: Extra Packages for Enterprise Linux 7
+            baseurl: http://download.fedoraproject.org/pub/epel/7/$basearch
+            enabled: 1
+            gpgcheck: 0
+            failovermethod: priority
+            #gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+        packages:
+          - ovirt-guest-agent-common
+        runcmd:
+          - [ 'systemctl', 'enable', 'ovirt-guest-agent.service' ]
+          - [ 'systemctl', 'start', 'ovirt-guest-agent.service' ]
+      user_name: root
+      root_password: "{{ item.1.root_password }}"
+  with_indexed_items:
+    - "{{ masters }}"
+# TODO : ^ in parralell
+
+- name: Create master VMs etcd disks
+  ovirt_disks:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ item.1.name }}_{{ item.0 }}_etcd_disk"
+    vm_name: "{{ item.1.name }}_{{ item.0 }}"
+    size: "{{ item.1.etcd_disk.size }}"
+    format: "{{ item.1.etcd_disk.format | default(omit) }}"
+    interface: "{{ item.1.etcd_disk.interface | default(omit) }}"
+    storage_domain: "{{ item.1.etcd_disk.storage_domain | default(omit) }}"
+  with_indexed_items:
+    - "{{ masters }}"
+  when: false
+
+- name: Create node VMs
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    cluster: "{{ item.1.cluster }}"
+    template: "{{ item.1.template }}"
+    name: "{{ item.1.name }}_{{ item.0 }}"
+    memory: "{{ item.1.memory }}"
+    cpu_cores: "{{ item.1.cores }}"
+    cloud_init:
+      nic_name: eth0
+      nic_boot_protocol: dhcp
+      nic_on_boot: true
+      host_name: "{{ item.1.name }}_{{ item.0 }}.{{ item.1.domain }}"
+      custom_script: |
+        yum_repos:
+          epel:
+            name: Extra Packages for Enterprise Linux 7
+            baseurl: http://download.fedoraproject.org/pub/epel/7/$basearch
+            enabled: 1
+            gpgcheck: 0
+            failovermethod: priority
+            #gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+        packages:
+          - ovirt-guest-agent-common
+        runcmd:
+          - [ 'systemctl', 'enable', 'ovirt-guest-agent.service' ]
+          - [ 'systemctl', 'start', 'ovirt-guest-agent.service' ]
+      user_name: root
+      root_password: "{{ item.1.root_password }}"
+  with_indexed_items:
+    - "{{ nodes }}"
+
+- name: Create node VMs disks
+  ovirt_disks:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ item.1.name }}_{{ item.0 }}_etcd_disk"
+    vm_name: "{{ item.1.name }}_{{ item.0 }}"
+    size: "{{ item.1.etcd_disk.size }}"
+    format: "{{ item.1.etcd_disk.format | default(omit) }}"
+    interface: "{{ item.1.etcd_disk.interface | default(omit) }}"
+    storage_domain: "{{ item.1.etcd_disk.storage_domain | default(omit) }}"
+  with_indexed_items:
+    - "{{ nodes }}"
+  when: false
+
+- name: List master VMs
+  ovirt_vms_facts:
+    auth: "{{ ovirt_auth }}"
+    pattern: "name={{ master_vm.name }}*"
+
+- name: Tag master VMs
+  ovirt_tags:
+    auth: "{{ ovirt_auth }}"
+    name: openshift_master
+    vms: "{{ ovirt_vms | map(attribute='name') | list }}"
+
+- name: List node VMs
+  ovirt_vms_facts:
+    auth: "{{ ovirt_auth }}"
+    pattern: "name={{ node_vm.name }}*"
+
+- name: Tag node VMs
+  ovirt_tags:
+    auth: "{{ ovirt_auth }}"
+    name: openshift_node
+    vms: "{{ ovirt_vms | map(attribute='name') | list }}"
+
+# TODO: wait for IP

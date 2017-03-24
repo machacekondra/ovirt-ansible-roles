@@ -1,0 +1,40 @@
+---
+master_vm:
+  cluster: production
+  root_password: 123456
+  domain: example.com
+  template: centos7
+  name: openshift_master
+  memory: 1GiB
+  cores: 1
+  etcd_disk:
+    size: 5GiB
+    mount: '/var/lib/etcd'
+    storage_domain: nfs
+    interface: virtio
+
+masters:
+  - "{{ master_vm }}"
+  - "{{ master_vm }}"
+
+node_vm:
+  #cluster: development
+  cluster: production
+  root_password: 123456
+  domain: example.com
+  template: centos7
+  name: openshift_node
+  memory: 1GiB
+  cores: 1
+  disks:
+    - size: 1GiB
+      mount: '/var/lib/origin'
+      storage_domain: nfs
+      interface: virtio
+    - size: 1GiB
+      storage_domain: nfs
+      interface: virtio
+
+nodes:
+  - "{{ node_vm }}"
+  - "{{ node_vm }}"

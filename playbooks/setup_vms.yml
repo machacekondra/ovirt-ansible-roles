@@ -1,0 +1,52 @@
+- name: Setup openshift VMs
+  hosts: openshift_master:openshift_node
+
+  vars:
+    rhn_channels:
+      - rhel-7-server-rpms
+      - rhel-7-server-extras-rpms
+      - rhel-7-server-optional-rpms
+      - rhel-7-server-ose-3.x-rpms
+
+    packages:
+      - net-tools
+      - git
+      - wget
+      - NetworkManager
+      - bind-utils
+      - iptables-services
+      - bridge-utils
+
+  tasks:
+    - name: Update system
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Install packages
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - "{{ packages }}"
+
+    - name: Add RHN channels
+      rhn_channel:
+        name: "{{ item }}"
+        sysname: server01
+        url: https://rhn.redhat.com/rpc/api
+        user: rhnuser
+        password: guessme
+      with_items:
+        - "{{ rhn_channels }}"
+      when: false
+
+    - name: Ensure NetworkManager
+      service:
+        name: NetworkManager
+        state: started
+        enabled: yes
+
+    # TODO: ensure time sync
+    # Sync SSH keys from masters to all nodes
+    # Ensure company CA’s are installed on all the nodes in the OCP Cluster
