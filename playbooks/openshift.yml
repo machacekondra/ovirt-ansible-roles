@@ -1,4 +1,4 @@
-- name: Setup openshift VMs
+- name: Setup openshift
   hosts: openshift_master:openshift_node
 
   vars:
@@ -50,3 +50,7 @@
     # TODO: ensure time sync
     # Sync SSH keys from masters to all nodes
     # Ensure company CA’s are installed on all the nodes in the OCP Cluster
+
+- name: Setup openshift
+  hosts: openshift_master:openshift_node
+

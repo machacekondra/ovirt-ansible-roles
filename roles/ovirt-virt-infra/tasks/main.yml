@@ -44,7 +44,6 @@
     storage_domain: "{{ item.1.etcd_disk.storage_domain | default(omit) }}"
   with_indexed_items:
     - "{{ masters }}"
-  when: false
 
 - name: Create node VMs
   ovirt_vms:
@@ -81,15 +80,14 @@
 - name: Create node VMs disks
   ovirt_disks:
     auth: "{{ ovirt_auth }}"
-    name: "{{ item.1.name }}_{{ item.0 }}_etcd_disk"
-    vm_name: "{{ item.1.name }}_{{ item.0 }}"
-    size: "{{ item.1.etcd_disk.size }}"
-    format: "{{ item.1.etcd_disk.format | default(omit) }}"
-    interface: "{{ item.1.etcd_disk.interface | default(omit) }}"
-    storage_domain: "{{ item.1.etcd_disk.storage_domain | default(omit) }}"
+    name: "{{ item.1.name }}_{{ item.0 }}_disk"
+    vm_name: "{{ node_vm['name'] }}_{{ item.0 }}"
+    size: "{{ item.1.size }}"
+    format: "{{ item.1.format | default(omit) }}"
+    interface: "{{ item.1.interface | default(omit) }}"
+    storage_domain: "{{ item.1.storage_domain | default(omit) }}"
   with_indexed_items:
-    - "{{ nodes }}"
-  when: false
+    - "{{ node_vm.disks }}"
 
 - name: List master VMs
   ovirt_vms_facts:

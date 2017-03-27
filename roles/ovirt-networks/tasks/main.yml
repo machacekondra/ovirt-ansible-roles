@@ -34,7 +34,7 @@
     labels: "{{ item.labels | default(omit) }}"
     interface: "{{ item.interface | default(omit) }}"
   with_items:
-    - "{{ host_networks }}"
+    - "{{ host_networks | default([]) }}"
   tags:
     - host_networks
     - networks
