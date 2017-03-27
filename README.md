@@ -1,11 +1,10 @@
-# ovirt-ansible-roles-datacenter
+# ovirt-ansible-roles
 
-Ansible roles to build oVirt datacenter.
+Ansible roles to build oVirt infrastracture.
 
 ## Implemented roles
 
 * [ovirt-aaa-jdbc]
-* [ovirt-aaa-ldap]
 * [ovirt-clusters]
 * [ovirt-datacenters]
 * [ovirt-hosts]
@@ -41,7 +40,6 @@ Playbook example
     - ovirt-networks
     - ovirt-storages
     - ovirt-aaa-jdbc
-    - ovirt-aaa-ldap
     - ovirt-permissions
 
   post_tasks:
@@ -215,7 +213,6 @@ permissions:
 ```
 
 [ovirt-aaa-jdbc]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-jdbc/README.md
-[ovirt-aaa-ldap]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-ldap/README.md
 [ovirt-clusters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-clusters/README.md
 [ovirt-datacenters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-datacenters/README.md
 [ovirt-hosts]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-hosts/README.md

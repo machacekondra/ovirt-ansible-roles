@@ -223,5 +223,4 @@ dependencies:
   - ovirt-networks
   - ovirt-storages
   - ovirt-aaa-jdbc
-  - ovirt-aaa-ldap
   - ovirt-permissions

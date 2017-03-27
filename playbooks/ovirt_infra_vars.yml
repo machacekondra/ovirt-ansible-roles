@@ -93,12 +93,12 @@ storages:
 ###########################
 # Users & Groups
 ###########################
-aaa_profile_type: 389ds
-aaa_user: uid=user1,ou=People,dc=lago,dc=local
-aaa_password: 123456
-aaa_profile_name: testldap
-aaa_ldap:
-  - 192.168.200.3
+#aaa_profile_type: 389ds
+#aaa_user: uid=user1,ou=People,dc=lago,dc=local
+#aaa_password: 123456
+#aaa_profile_name: testldap
+#aaa_ldap:
+#  - 192.168.200.3
 
 users:
   - name: user1
