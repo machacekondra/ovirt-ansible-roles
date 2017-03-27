@@ -1,0 +1,12 @@
+---
+image_path: /tmp/data
+qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2.xz
+template_cluster: development
+template_name: centos_7
+template_memory: 1GiB
+template_cpu: 1
+template_disk_size: 10GiB
+template_nics:
+  - name: nic1
+    profile_name: ovirtmgmt
+    interface: virtio

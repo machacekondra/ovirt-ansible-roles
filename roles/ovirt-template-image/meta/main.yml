@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Ondra Machacek
+  description: Role to deploy Manage IQ into oVirt.
+  company: Red Hat, Inc.
+
+  license: license (GPLv2, CC-BY, etc)
+
+  min_ansible_version: 2.2
+
+  platforms:
+  - name: EL
+    versions:
+    - 7
+  - name: Fedora
+    versions:
+    - 24
+
+  galaxy_tags: [manageiq, cloudforms, ovirt, rhv, rhev, virtualization]
+
+dependencies: []
