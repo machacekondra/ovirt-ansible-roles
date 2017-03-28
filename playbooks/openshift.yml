@@ -1,27 +1,58 @@
-- name: Setup openshift
-  hosts: openshift_master:openshift_node
+- name: Prepare openshift VMs
+  hosts: tag_openshift_master:tag_openshift_node
+  gather_facts: no
+
+  vars_files:
+    - ../secret.yml
 
   vars:
-    rhn_channels:
+    ansible_ssh_pass: 123456
+    rhn_subscriptions:
       - rhel-7-server-rpms
       - rhel-7-server-extras-rpms
       - rhel-7-server-optional-rpms
-      - rhel-7-server-ose-3.x-rpms
+      - rhel-7-server-ose-3.6-rpms
+      #- rhel-ha-for-rhel-7-server-rpms
 
     packages:
-      - net-tools
-      - git
-      - wget
       - NetworkManager
+      - wget
+      - git
+      - net-tools
       - bind-utils
       - iptables-services
       - bridge-utils
+      - atomic-openshift-utils
 
   tasks:
-    - name: Update system
-      yum:
-        name: '*'
-        state: latest
+    - name: Register subscriptions
+      shell: "subscription-manager register --username={{ username }} --password={{ password }} --insecure --serverurl={{ hostname }} --baseurl={{ baseurl }}"
+      register: res
+      changed_when: res.rc != 64
+      failed_when: res.rc != 64 and res.rc != 0
+      tags:
+        - subscriptions
+
+    - name: Attach pool
+      shell: "subscription-manager attach --pool={{ pool_id }}"
+      register: res
+      changed_when: res.rc != 1
+      failed_when: res.rc != 1 and res.rc != 0
+      tags:
+        - subscriptions
+        - pool
+
+    - name: Disable all repos
+      shell: subscription-manager repos --disable=*
+      tags:
+        - subscriptions
+
+    - name: Enable releavant repos
+      shell: subscription-manager repos --enable={{ item }}
+      with_items:
+        - "{{ rhn_subscriptions }}"
+      tags:
+        - subscriptions
 
     - name: Install packages
       yum:
@@ -29,17 +60,6 @@
         state: latest
       with_items:
         - "{{ packages }}"
-
-    - name: Add RHN channels
-      rhn_channel:
-        name: "{{ item }}"
-        sysname: server01
-        url: https://rhn.redhat.com/rpc/api
-        user: rhnuser
-        password: guessme
-      with_items:
-        - "{{ rhn_channels }}"
-      when: false
 
     - name: Ensure NetworkManager
       service:
@@ -51,6 +71,45 @@
     # Sync SSH keys from masters to all nodes
     # Ensure company CA’s are installed on all the nodes in the OCP Cluster
 
-- name: Setup openshift
-  hosts: openshift_master:openshift_node
+    - name: Create master inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: masters
+      with_items:
+        - "{{ groups['tag_openshift_master'] }}"
+
+    - name: Create etcd inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: etcd
+      with_items:
+        - "{{ groups['tag_openshift_master'] }}"
+
+    - name: Create nodes inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: nodes
+        openshift_node_labels:
+          region: primary
+          zone: west
+      with_items:
+        - "{{ groups['tag_openshift_node'] }}"
+
+    - name: Create nodes inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: nodes
+        openshift_node_labels:
+          region: infra
+          zone: default
+      with_items:
+        - "{{ groups['tag_openshift_master'] }}"
+
+
+- include: /home/omachace/workspace/openshift-ansible/playbooks/byo/config.yml
+  vars:
+    deployment_type: openshift-enterprise
+    openshift_master_cluster_method: native
+    openshift_master_cluster_hostname: openshift-cluster.example.com
+    openshift_master_cluster_public_hostname: openshift-cluster.example.com
 

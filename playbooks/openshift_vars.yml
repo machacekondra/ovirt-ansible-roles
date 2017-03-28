@@ -1,0 +1,11 @@
+ansible_ssh_pass: 123456
+
+deployment_type: openshift-enterprise
+openshift_master_cluster_method: native
+openshift_master_cluster_hostname: openshift-cluster.example.com
+openshift_master_cluster_public_hostname: openshift-cluster.example.com
+
+install_docker_excluder: false
+install_openshift_excluder: false
+
+openshift_clock_enabled: true

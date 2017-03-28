@@ -28,11 +28,11 @@
     password: "{{ item.password }}"
     cluster: "{{ item.cluster }}"
     override_iptables: true
-    timeout: "{{ item.timeout | default(600) }}"
-    poll_interval: "{{ item.poll_interval | default(15) }}"
+    timeout: "{{ item.timeout | default(1200) }}"
+    poll_interval: "{{ item.poll_interval | default(20) }}"
   with_items:
     - "{{ hosts | default([]) }}"
-  async: 600
+  async: 1200
   poll: 0
   register: add_hosts
   tags:
@@ -46,5 +46,5 @@
   tags:
     - hosts
   until: job_result.finished
-  retries: 60
-  delay: 10
+  retries: 120
+  delay: 20

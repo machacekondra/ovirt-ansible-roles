@@ -3,9 +3,11 @@
 # REST API variables
 ###########################
 engine_url: https://engine/ovirt-engine/api
+#engine_url: https://ondra.local/ovirt-engine/api
 engine_user: admin@internal
 engine_password: 123
 engine_cafile: /etc/pki/ovirt-engine/ca.pem
+#engine_cafile: /home/omachace/ovirt-engine/etc/pki/ovirt-engine/ca.pem
 engine_insecure: false
 
 ###########################
@@ -31,7 +33,7 @@ hosts:
   - name: myhost
     address: 10.34.60.25
     cluster: production
-    password: 123456
+    password: qum5net
 
 ###########################
 # Storage
@@ -100,6 +102,7 @@ storages:
 #aaa_ldap:
 #  - 192.168.200.3
 
+#aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
 users:
   - name: user1
     authz_name: internal-authz
@@ -137,10 +140,10 @@ permissions:
 ##########################
 #qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2.xz
 #qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1608.qcow2
-image_path: /tmp/data
+image_path: /tmp/rhel7.qcow2
 qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
 template_cluster: production
-template_name: centos7
+template_name: rhel7
 template_memory: 1GiB
 template_cpu: 1
 template_disk_size: 10GiB
@@ -153,7 +156,7 @@ master_vm:
   cluster: production
   root_password: 123456
   domain: example.com
-  template: centos7
+  template: rhel7
   name: openshift_master
   memory: 1GiB
   cores: 1
@@ -172,7 +175,7 @@ node_vm:
   cluster: production
   root_password: 123456
   domain: example.com
-  template: centos7
+  template: rhel7
   name: openshift_node
   memory: 1GiB
   cores: 1
