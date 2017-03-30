@@ -2,7 +2,15 @@
 - name: Get hosts
   ovirt_hosts_facts:
     auth: "{{ ovirt_auth }}"
-    pattern: "cluster={{ cluster_name }} and update_available=true"
+    pattern: "cluster={{ cluster_name | mandatory }} and update_available=true"
+  tags:
+    - ovirt-cluster-upgrade
+    - xxx
+
+- name: Check if there are hosts to be updated
+  debug:
+    msg: "No hosts to be updated"
+  when: ovirt_hosts | length == 0
 
 - block:
   - name: Get cluster facts
@@ -16,10 +24,22 @@
     ovirt_scheduling_policies_facts:
       auth: "{{ ovirt_auth }}"
       id: "{{ ovirt_clusters[0].scheduling_policy.id }}"
+    tags:
+      - ovirt-cluster-upgrade
 
   - name: Remember the cluster scheduling policy
     set_fact:
       cluster_sched_policy: "{{ ovirt_scheduling_policies[0].name }}"
+    tags:
+      - ovirt-cluster-upgrade
+
+  - name: Get list of VMs in cluster
+    ovirt_vms_facts:
+      auth: "{{ ovirt_auth }}"
+      pattern: "cluster=production"
+    tags:
+      - ovirt-cluster-upgrade
+      - xxx
 
   - name: Set in cluster upgrade policy
     ovirt_clusters:
@@ -28,28 +48,29 @@
       scheduling_policy: InClusterUpgrade
     tags:
       - ovirt-cluster-upgrade
-  
-  - name: Get list of pinned to host VMs
-    ovirt_vms_facts:
-      auth: "{{ ovirt_auth }}"
-      pattern: "cluster=production"
-    tags:
-      - ovirt-cluster-upgrade
-  
-  - name: Shutdown pin to host VMs
+
+  - name: Shutdown low priority VMs
     ovirt_vms:
       auth: "{{ ovirt_auth }}"
       state: stopped
       name: "{{ item.name }}"
     with_items:
-      - "{{ ovirt_vms }}"
-    when: "{{ 'hosts' in item['placement_policy'] }}"
+      - "{{ low_prio_vms | default([]) }}"
     tags:
       - ovirt-cluster-upgrade
-   
+
+  - include: pinned_vms.yml
+    tags:
+      - ovirt-cluster-upgrade
+
+  # Update only those hosts that aren't in list of hosts were VMs are pinned
+  # or if force_pinned is enabled, which means we stop pinned VMs
   - include: upgrade.yml
     with_items:
       - "{{ ovirt_hosts }}"
+    when: "{{ item.id not in host_ids or force_pinned }}"
+    tags:
+      - ovirt-cluster-upgrade
 
   always:
     - name: Set original cluster policy
@@ -57,5 +78,29 @@
         auth: "{{ ovirt_auth }}"
         name: "{{ cluster_name }}"
         scheduling_policy: "{{ ovirt_scheduling_policies[0].name  }}"
+      tags:
+        - ovirt-cluster-upgrade
 
-  when: ovirt_hosts | length > 0
+    - name: Start again low priority VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+      with_items:
+        - "{{ low_prio_vms | default([]) }}"
+      tags:
+        - ovirt-cluster-upgrade
+
+    - name: Start again pin to host VMs
+      ovirt_vms:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ item.name }}"
+      with_items:
+        - "{{ pinned_to_host_vms | default([]) }}"
+      when: "force_pinned"
+      tags:
+        - ovirt-cluster-upgrade
+
+    - name: Fail the playbook, if some hosts wasn't updated
+      fail:
+        msg: "The cluster upgrade failed. Some of the hosts wasn't updated."
+      when: "upgrade_failed is defined and upgrade_failed"

@@ -1,27 +1,20 @@
 ---
 - block:
 
-  - name: Put host to maintanenace
-    ovirt_hosts:
-      auth: "{{ ovirt_auth }}"
-      name: "{{ item.name }}"
-      state: maintenance
-
   - name: Upgrade host
     ovirt_hosts:
       auth: "{{ ovirt_auth }}"
       name: "{{ item.name }}"
       state: upgraded
+      timeout: 1200
     register: host_upgraded
-
-  - name: Reboot host
-    ovirt_hosts:
-      auth: "{{ ovirt_auth }}"
-      name: "{{ item.name }}"
-      state: restarted
-    when: host_upgraded.changed
 
   rescue:
     - name: Report issues
-      debug:
+      fail:
         msg: "Upgrade of host '{{ item.name }}' failed :( ."
+      ignore_errors: true
+
+    - name: Set the operation to fail
+      set_fact:
+        upgrade_failed: true
