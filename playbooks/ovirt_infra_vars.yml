@@ -150,7 +150,7 @@ template_cluster: production
 template_name: rhel7
 template_memory: 1GiB
 template_cpu: 1
-template_disk_size: 10GiB
+template_disk_size: 20GiB
 template_nics:
   - name: nic1
     profile_name: ovirtmgmt
@@ -194,11 +194,24 @@ vms:
   - name: openshift_node_1
     tag: openshift_node
     profile: "{{ node_vm }}"
+  - name: openshift_node_2
+    tag: openshift_node
+    profile: "{{ node_vm }}"
+  - name: openshift_node_image
+    tag: openshift_node
+    profile: "{{ node_vm }}"
+  - name: openshift_node_router
+    tag: openshift_node
+    profile: "{{ node_vm }}"
+
 
   # Master VMs
   - name: openshift_master_0
     profile: "{{ master_vm }}"
     tag: openshift_master
   - name: openshift_master_1
+    tag: openshift_master
+    profile: "{{ master_vm }}"
+  - name: openshift_master_2
     tag: openshift_master
     profile: "{{ master_vm }}"

@@ -28,6 +28,7 @@
         fstype: ext4
         state: mounted
       delegate_to: "{{ item }}"
+      ignore_errors: yes
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
       tags:
@@ -40,6 +41,7 @@
         fstype: ext4
         state: mounted
       delegate_to: "{{ item }}"
+      ignore_errors: yes
       with_items:
         - "{{ groups['tag_openshift_node'] }}"
       tags:
@@ -54,7 +56,6 @@
         - "{{ groups['tag_openshift_master'] }}"
         - "{{ groups['tag_openshift_node'] }}"
       tags:
-        - disk
         - dns
 
 - name: Prepare openshift VMs
@@ -143,6 +144,8 @@
         groups: masters
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
+      tags:
+        - openshift_install
 
     - name: Create etcd inventory for openshift
       add_host:
@@ -150,6 +153,8 @@
         groups: etcd
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
+      tags:
+        - openshift_install
 
     - name: Create nodes inventory for openshift
       add_host:
@@ -160,6 +165,8 @@
           zone: west
       with_items:
         - "{{ groups['tag_openshift_node'] }}"
+      tags:
+        - openshift_install
 
     - name: Create nodes inventory for openshift
       add_host:
@@ -170,6 +177,8 @@
           zone: default
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
+      tags:
+        - openshift_install
 
 
 - include: /home/omachace/workspace/openshift-ansible/playbooks/byo/config.yml
@@ -179,3 +188,5 @@
     openshift_master_cluster_hostname: openshift-cluster.example.com
     openshift_master_cluster_public_hostname: openshift-cluster.example.com
 
+  tags:
+    - openshift_install
