@@ -1,0 +1,27 @@
+---
+- block:
+
+  - name: Put host to maintanenace
+    ovirt_hosts:
+      auth: "{{ ovirt_auth }}"
+      name: "{{ item.name }}"
+      state: maintenance
+
+  - name: Upgrade host
+    ovirt_hosts:
+      auth: "{{ ovirt_auth }}"
+      name: "{{ item.name }}"
+      state: upgraded
+    register: host_upgraded
+
+  - name: Reboot host
+    ovirt_hosts:
+      auth: "{{ ovirt_auth }}"
+      name: "{{ item.name }}"
+      state: restarted
+    when: host_upgraded.changed
+
+  rescue:
+    - name: Report issues
+      debug:
+        msg: "Upgrade of host '{{ item.name }}' failed :( ."

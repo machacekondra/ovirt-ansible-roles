@@ -1,40 +1,61 @@
 ---
-# TODO: block-rescue, set policy back if failed or success
-- name: Set in cluster upgrade policy
-  ovirt_clusters:
-    auth: "{{ ovirt_auth }}"
-    name: "{{ cluster_name }}"
-    scheduling_policy: InClusterUpgrade
-  tags:
-    - ovirt-cluster-upgrade
-
-- name: Get list of pinned to host VMs
-  ovirt_vms_facts:
-    auth: "{{ ovirt_auth }}"
-    pattern: "cluster=production"
-  tags:
-    - ovirt-cluster-upgrade
-
-- name: Shutdown pin to host VMs
-  ovirt_vms:
-    auth: "{{ ovirt_auth }}"
-    state: stopped
-    name: "{{ item.name }}"
-  with_items:
-    - "{{ ovirt_vms }}"
-  when: "{{ 'hosts' in item['placement_policy'] }}"
-  tags:
-    - ovirt-cluster-upgrade
-
-- name: Get active hosts
+- name: Get hosts
   ovirt_hosts_facts:
     auth: "{{ ovirt_auth }}"
-    pattern: "status=up"
+    pattern: "cluster={{ cluster_name }} and update_available=true"
 
-- name: Put hosts to maintanenace
-  ovirt_hosts:
-    auth: "{{ ovirt_auth }}"
-    name: "{{ item.name }}"
-    state: maintenance
-  with_items:
-    - "{{ ovirt_hosts }}"
+- block:
+  - name: Get cluster facts
+    ovirt_clusters_facts:
+      auth: "{{ ovirt_auth }}"
+      pattern: "name={{ cluster_name }}"
+    tags:
+      - ovirt-cluster-upgrade
+
+  - name: Get name of the original scheduling policy
+    ovirt_scheduling_policies_facts:
+      auth: "{{ ovirt_auth }}"
+      id: "{{ ovirt_clusters[0].scheduling_policy.id }}"
+
+  - name: Remember the cluster scheduling policy
+    set_fact:
+      cluster_sched_policy: "{{ ovirt_scheduling_policies[0].name }}"
+
+  - name: Set in cluster upgrade policy
+    ovirt_clusters:
+      auth: "{{ ovirt_auth }}"
+      name: "{{ cluster_name }}"
+      scheduling_policy: InClusterUpgrade
+    tags:
+      - ovirt-cluster-upgrade
+  
+  - name: Get list of pinned to host VMs
+    ovirt_vms_facts:
+      auth: "{{ ovirt_auth }}"
+      pattern: "cluster=production"
+    tags:
+      - ovirt-cluster-upgrade
+  
+  - name: Shutdown pin to host VMs
+    ovirt_vms:
+      auth: "{{ ovirt_auth }}"
+      state: stopped
+      name: "{{ item.name }}"
+    with_items:
+      - "{{ ovirt_vms }}"
+    when: "{{ 'hosts' in item['placement_policy'] }}"
+    tags:
+      - ovirt-cluster-upgrade
+   
+  - include: upgrade.yml
+    with_items:
+      - "{{ ovirt_hosts }}"
+
+  always:
+    - name: Set original cluster policy
+      ovirt_clusters:
+        auth: "{{ ovirt_auth }}"
+        name: "{{ cluster_name }}"
+        scheduling_policy: "{{ ovirt_scheduling_policies[0].name  }}"
+
+  when: ovirt_hosts | length > 0
