@@ -1,3 +1,62 @@
+- name: Prepare masters VMs disks
+  hosts: tag_openshift_master:tag_openshift_node
+  gather_facts: yes
+
+  vars:
+    ansible_ssh_pass: 123456
+
+  tasks:
+    - name: Create new primary partiton
+      parted:
+        device: /dev/vdb
+        number: 1
+        state: present
+      tags:
+        - disk
+
+    - name: Create filesystem on disk
+      filesystem:
+        fstype: ext4
+        dev: /dev/vdb
+      tags:
+        - disk
+
+    - name: Mount etcd
+      mount:
+        name: /var/lib/etcd
+        src: /dev/vdb
+        fstype: ext4
+        state: mounted
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ groups['tag_openshift_master'] }}"
+      tags:
+        - disk
+
+    - name: Mount origin
+      mount:
+        name: /var/lib/origin
+        src: /dev/vdb
+        fstype: ext4
+        state: mounted
+      delegate_to: "{{ item }}"
+      with_items:
+        - "{{ groups['tag_openshift_node'] }}"
+      tags:
+        - disk
+
+    - name: Register DNS
+      lineinfile:
+        dest: /etc/hosts
+        regexp: "^{{ hostvars[item]['ansible_host'] }}"
+        line: "{{ hostvars[item]['ansible_host'] }} {{ item }} {{ hostvars[item]['fqdn'] }}"
+      with_flattened:
+        - "{{ groups['tag_openshift_master'] }}"
+        - "{{ groups['tag_openshift_node'] }}"
+      tags:
+        - disk
+        - dns
+
 - name: Prepare openshift VMs
   hosts: tag_openshift_master:tag_openshift_node
   gather_facts: no
@@ -11,8 +70,8 @@
       - rhel-7-server-rpms
       - rhel-7-server-extras-rpms
       - rhel-7-server-optional-rpms
-      - rhel-7-server-ose-3.6-rpms
-      #- rhel-ha-for-rhel-7-server-rpms
+      - rhel-7-server-ose-3.4-rpms
+      - rhel-ha-for-rhel-7-server-rpms
 
     packages:
       - NetworkManager
@@ -23,6 +82,7 @@
       - iptables-services
       - bridge-utils
       - atomic-openshift-utils
+      - docker
 
   tasks:
     - name: Register subscriptions
@@ -35,17 +95,19 @@
 
     - name: Attach pool
       shell: "subscription-manager attach --pool={{ pool_id }}"
-      register: res
-      changed_when: res.rc != 1
-      failed_when: res.rc != 1 and res.rc != 0
+      register: pool_res
+      changed_when: pool_res.rc != 1
+      failed_when: pool_res.rc != 1 and pool_res.rc != 0
       tags:
         - subscriptions
         - pool
 
     - name: Disable all repos
       shell: subscription-manager repos --disable=*
+      when: pool_res.changed
       tags:
         - subscriptions
+        - repos
 
     - name: Enable releavant repos
       shell: subscription-manager repos --enable={{ item }}
@@ -53,13 +115,17 @@
         - "{{ rhn_subscriptions }}"
       tags:
         - subscriptions
+        - repos
 
     - name: Install packages
       yum:
         name: "{{ item }}"
         state: latest
+      ignore_errors: yes
       with_items:
         - "{{ packages }}"
+      tags:
+        - packages
 
     - name: Ensure NetworkManager
       service:

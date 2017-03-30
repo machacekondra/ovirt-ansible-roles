@@ -1,0 +1,40 @@
+---
+# TODO: block-rescue, set policy back if failed or success
+- name: Set in cluster upgrade policy
+  ovirt_clusters:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ cluster_name }}"
+    scheduling_policy: InClusterUpgrade
+  tags:
+    - ovirt-cluster-upgrade
+
+- name: Get list of pinned to host VMs
+  ovirt_vms_facts:
+    auth: "{{ ovirt_auth }}"
+    pattern: "cluster=production"
+  tags:
+    - ovirt-cluster-upgrade
+
+- name: Shutdown pin to host VMs
+  ovirt_vms:
+    auth: "{{ ovirt_auth }}"
+    state: stopped
+    name: "{{ item.name }}"
+  with_items:
+    - "{{ ovirt_vms }}"
+  when: "{{ 'hosts' in item['placement_policy'] }}"
+  tags:
+    - ovirt-cluster-upgrade
+
+- name: Get active hosts
+  ovirt_hosts_facts:
+    auth: "{{ ovirt_auth }}"
+    pattern: "status=up"
+
+- name: Put hosts to maintanenace
+  ovirt_hosts:
+    auth: "{{ ovirt_auth }}"
+    name: "{{ item.name }}"
+    state: maintenance
+  with_items:
+    - "{{ ovirt_hosts }}"

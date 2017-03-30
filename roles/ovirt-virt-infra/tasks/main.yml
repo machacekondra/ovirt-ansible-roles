@@ -1,147 +1,85 @@
 ---
-- name: Create master VMs
+- name: Create VMs
   ovirt_vms:
     auth: "{{ ovirt_auth }}"
-    cluster: "{{ item.1.cluster }}"
-    template: "{{ item.1.template }}"
-    name: "{{ item.1.name }}_{{ item.0 }}"
-    memory: "{{ item.1.memory }}"
-    cpu_cores: "{{ item.1.cores }}"
-    high_availability: true
+    cluster: "{{ item.profile.cluster }}"
+    template: "{{ item.profile.template }}"
+    name: "{{ item.name }}"
+    memory: "{{ item.profile.memory }}"
+    cpu_cores: "{{ item.profile.cores }}"
     cloud_init:
+      nic_name: eth0
       nic_boot_protocol: dhcp
       nic_on_boot: true
-      nic_name: eth0
-      host_name: "{{ item.1.name }}_{{ item.0 }}.{{ item.1.domain }}"
+      host_name: "{{ item.name }}.{{ item.profile.domain }}"
       # This is hack, because ovirt-guest-agent fail to start on my rhel7 qcow2 image
+      # it doesn't work only on master (4.2) engine version
       custom_script: |
         runcmd:
           - [ 'ln', '-s', '/dev/vport2p1', '/dev/virtio-ports/com.redhat.rhevm.vdsm' ]
           - [ 'chown', 'ovirtagent:ovirtagent', '/dev/virtio-ports/com.redhat.rhevm.vdsm' ]
           - [ 'systemctl', 'restart', 'ovirt-guest-agent.service' ]
       user_name: root
-      root_password: "{{ item.1.root_password }}"
-  with_indexed_items:
-    - "{{ masters }}"
-  async: 240
+      root_password: "{{ item.profile.root_password }}"
+  with_items:
+    - "{{ vms }}"
+  async: 800
   poll: 0
-  register: masters_vms
+  register: all_vms
+  tags:
+    - ovirt-virt-infra
 
-- name: Create node VMs
-  ovirt_vms:
-    auth: "{{ ovirt_auth }}"
-    cluster: "{{ item.1.cluster }}"
-    template: "{{ item.1.template }}"
-    name: "{{ item.1.name }}_{{ item.0 }}"
-    memory: "{{ item.1.memory }}"
-    cpu_cores: "{{ item.1.cores }}"
-    cloud_init:
-      nic_name: eth0
-      nic_boot_protocol: dhcp
-      nic_on_boot: true
-      host_name: "{{ item.1.name }}_{{ item.0 }}.{{ item.1.domain }}"
-      # This is hack, because ovirt-guest-agent fail to start on my rhel7 qcow2 image
-      custom_script: |
-        runcmd:
-          - [ 'ln', '-s', '/dev/vport2p1', '/dev/virtio-ports/com.redhat.rhevm.vdsm' ]
-          - [ 'chown', 'ovirtagent:ovirtagent', '/dev/virtio-ports/com.redhat.rhevm.vdsm' ]
-          - [ 'systemctl', 'restart', 'ovirt-guest-agent.service' ]
-      user_name: root
-      root_password: "{{ item.1.root_password }}"
-  with_indexed_items:
-    - "{{ nodes }}"
-  async: 240
-  poll: 0
-  register: nodes_vms
-
-- name: Wait for master VMs to be added
+- name: Wait for VMs to be added
   async_status: "jid={{ item.ansible_job_id }}"
   register: job_result
   with_items:
-    - "{{ masters_vms.results }}"
+    - "{{ all_vms.results }}"
   until: job_result.finished
-  retries: 20
-  delay: 12
+  retries: 40
+  delay: 20
+  tags:
+    - ovirt-virt-infra
 
-- name: Wait for nodes VMs to be added
-  async_status: "jid={{ item.ansible_job_id }}"
-  register: job_result
-  with_items:
-    - "{{ nodes_vms.results }}"
-  until: job_result.finished
-  retries: 20
-  delay: 12
-
-- name: Create master VMs etcd disks
+- name: Create VMs disks
   ovirt_disks:
     auth: "{{ ovirt_auth }}"
-    name: "{{ item.1.name }}_{{ item.0 }}_etcd_disk"
-    vm_name: "{{ item.1.name }}_{{ item.0 }}"
-    size: "{{ item.1.etcd_disk.size }}"
-    format: "{{ item.1.etcd_disk.format | default(omit) }}"
-    interface: "{{ item.1.etcd_disk.interface | default(omit) }}"
-    storage_domain: "{{ item.1.etcd_disk.storage_domain | default(omit) }}"
-  with_indexed_items:
-    - "{{ masters }}"
-
-- name: Create node VMs disks
-  ovirt_disks:
-    auth: "{{ ovirt_auth }}"
-    name: "{{ item.1.name }}_{{ item.0 }}_disk"
-    vm_name: "{{ node_vm['name'] }}_{{ item.0 }}"
+    name: "{{ item.0.name }}_{{ item.1.name }}"
+    vm_name: "{{ item.0.name }}"
     size: "{{ item.1.size }}"
     format: "{{ item.1.format | default(omit) }}"
     interface: "{{ item.1.interface | default(omit) }}"
     storage_domain: "{{ item.1.storage_domain | default(omit) }}"
-  with_indexed_items:
-    - "{{ node_vm.disks }}"
+  with_subelements:
+    - "{{ vms }}"
+    - profile.disks
+  tags:
+    - ovirt-virt-infra
 
-- name: List master VMs
-  ovirt_vms_facts:
-    auth: "{{ ovirt_auth }}"
-    pattern: "name={{ master_vm.name }}*"
-
-- name: Tag master VMs
+- name: Tag VMs
   ovirt_tags:
     auth: "{{ ovirt_auth }}"
-    name: openshift_master
-    vms: "{{ ovirt_vms | map(attribute='name') | list }}"
+    name: "{{ item }}"
+    vms: "{{ vms|json_query(query)|map(attribute='name') | list }}"
+    #vms: []
+  with_items:
+    - "{{ vms | map(attribute='tag') | list | unique }}"
+  vars:
+    query: "[?tag=='{{ item }}']"
+  tags:
+    - ovirt-virt-infra
 
-- name: List node VMs
+- name: Wait for VMs IP
   ovirt_vms_facts:
     auth: "{{ ovirt_auth }}"
-    pattern: "name={{ node_vm.name }}*"
-
-- name: Tag node VMs
-  ovirt_tags:
-    auth: "{{ ovirt_auth }}"
-    name: openshift_node
-    vms: "{{ ovirt_vms | map(attribute='name') | list }}"
-
-- name: Wait for masters VMs IP
-  ovirt_vms_facts:
-    auth: "{{ ovirt_auth }}"
-    pattern: "name={{ item.1.name }}_{{ item.0 }}"
+    pattern: "name={{ item.name }}"
     fetch_nested: true
     nested_attributes: ips
-  with_indexed_items:
-    - "{{ masters }}"
+  with_items:
+    - "{{ vms }}"
   until: ovirt_vms | map(attribute='reported_devices') | list | first | length > 0
   retries: 5
   delay: 5
+  when: "{{ wait_for_ip | default(true) }}"
   tags:
     - wait_for_ip
-
-- name: Wait for masters VMs IP
-  ovirt_vms_facts:
-    auth: "{{ ovirt_auth }}"
-    pattern: "name={{ item.1.name }}_{{ item.0 }}"
-    fetch_nested: true
-    nested_attributes: ips
-  with_indexed_items:
-    - "{{ nodes }}"
-  until: ovirt_vms | map(attribute='reported_devices') | list | first | length > 0
-  retries: 5
-  delay: 5
-  tags:
-    - wait_for_ip
+    - ovirt-virt-infra

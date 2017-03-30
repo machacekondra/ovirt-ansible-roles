@@ -2,18 +2,18 @@
 ###########################
 # REST API variables
 ###########################
-engine_url: https://engine/ovirt-engine/api
-#engine_url: https://ondra.local/ovirt-engine/api
+#engine_url: https://engine/ovirt-engine/api
+engine_url: https://ondra.local/ovirt-engine/api
 engine_user: admin@internal
-engine_password: 123
-engine_cafile: /etc/pki/ovirt-engine/ca.pem
-#engine_cafile: /home/omachace/ovirt-engine/etc/pki/ovirt-engine/ca.pem
+engine_password: 123456
+#engine_cafile: /etc/pki/ovirt-engine/ca.pem
+engine_cafile: /home/omachace/ovirt-engine41/etc/pki/ovirt-engine/ca.pem
 engine_insecure: false
 
 ###########################
 # Common
 ###########################
-compatibility_version: 4.2
+compatibility_version: 4.1
 
 # Data center
 data_center_name: mydatacenter
@@ -33,7 +33,11 @@ hosts:
   - name: myhost
     address: 10.34.60.25
     cluster: production
-    password: qum5net
+    password: 123456
+  - name: myhost1
+    address: 10.34.61.35
+    cluster: production
+    password: 123456
 
 ###########################
 # Storage
@@ -44,7 +48,7 @@ storages:
     state: present
     nfs:
       address: 10.34.63.199
-      path: /om03
+      path: /om02
 #  iscsi:
 #    state: present
 #    iscsi:
@@ -102,7 +106,7 @@ storages:
 #aaa_ldap:
 #  - 192.168.200.3
 
-#aaa_jdbc_prefix: /home/omachace/ovirt-engine/bin
+aaa_jdbc_prefix: /home/omachace/ovirt-engine41/bin
 users:
   - name: user1
     authz_name: internal-authz
@@ -157,39 +161,44 @@ master_vm:
   root_password: 123456
   domain: example.com
   template: rhel7
-  name: openshift_master
   memory: 1GiB
   cores: 1
-  etcd_disk:
-    size: 5GiB
-    mount: '/var/lib/etcd'
-    storage_domain: nfs
-    interface: virtio
-
-masters:
-  - "{{ master_vm }}"
-  - "{{ master_vm }}"
+  disks:
+    - size: 5GiB
+      storage_domain: nfs
+      interface: virtio
+      name: etcd_disk
 
 node_vm:
-  #cluster: development
   cluster: production
   root_password: 123456
   domain: example.com
   template: rhel7
-  name: openshift_node
   memory: 1GiB
   cores: 1
   disks:
-    - size: 1GiB
+    - size: 10GiB
       name: origin_disk
-      mount: '/var/lib/origin'
       storage_domain: nfs
       interface: virtio
-    - size: 1GiB
+    - size: 10GiB
       name: data_disk
       storage_domain: nfs
       interface: virtio
 
-nodes:
-  - "{{ node_vm }}"
-  - "{{ node_vm }}"
+vms:
+  # Node VMs
+  - name: openshift_node_0
+    tag: openshift_node
+    profile: "{{ node_vm }}"
+  - name: openshift_node_1
+    tag: openshift_node
+    profile: "{{ node_vm }}"
+
+  # Master VMs
+  - name: openshift_master_0
+    profile: "{{ master_vm }}"
+    tag: openshift_master
+  - name: openshift_master_1
+    tag: openshift_master
+    profile: "{{ master_vm }}"

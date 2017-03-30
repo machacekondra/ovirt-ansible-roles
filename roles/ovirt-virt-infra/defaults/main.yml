@@ -1,40 +1,45 @@
 ---
 master_vm:
+  tag: openshift_master
   cluster: production
   root_password: 123456
   domain: example.com
-  template: centos7
-  name: openshift_master
-  memory: 1GiB
-  cores: 1
-  etcd_disk:
-    size: 5GiB
-    mount: '/var/lib/etcd'
-    storage_domain: nfs
-    interface: virtio
-
-masters:
-  - "{{ master_vm }}"
-  - "{{ master_vm }}"
-
-node_vm:
-  #cluster: development
-  cluster: production
-  root_password: 123456
-  domain: example.com
-  template: centos7
-  name: openshift_node
+  template: rhel7
   memory: 1GiB
   cores: 1
   disks:
-    - size: 1GiB
-      mount: '/var/lib/origin'
+    - size: 5GiB
       storage_domain: nfs
       interface: virtio
-    - size: 1GiB
+      name: etcd_disk
+
+node_vm:
+  tag: openshift_node
+  cluster: production
+  root_password: 123456
+  domain: example.com
+  template: rhel7
+  memory: 1GiB
+  cores: 1
+  disks:
+    - size: 10GiB
+      name: origin_disk
+      storage_domain: nfs
+      interface: virtio
+    - size: 10GiB
+      name: data_disk
       storage_domain: nfs
       interface: virtio
 
-nodes:
-  - "{{ node_vm }}"
-  - "{{ node_vm }}"
+vms:
+  # Node VMs
+  - name: openshift_node_0
+    profile: "{{ node_vm }}"
+  - name: openshift_node_1
+    profile: "{{ node_vm }}"
+
+  # Master VMs
+  - name: openshift_master_0
+    profile: "{{ master_vm }}"
+  - name: openshift_master_1
+    profile: "{{ master_vm }}"
