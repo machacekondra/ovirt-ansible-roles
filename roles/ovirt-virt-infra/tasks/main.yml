@@ -12,6 +12,7 @@
       nic_boot_protocol: dhcp
       nic_on_boot: true
       host_name: "{{ item.name }}.{{ item.profile.domain }}"
+      authorized_ssh_keys: "{{ vm_ssh_key }}"
       # This is hack, because ovirt-guest-agent fail to start on my rhel7 qcow2 image
       # it doesn't work only on master (4.2) engine version
       custom_script: |

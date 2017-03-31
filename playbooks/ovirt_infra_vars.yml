@@ -156,6 +156,8 @@ template_nics:
     profile_name: ovirtmgmt
     interface: virtio
 
+vm_ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjjbwFT/R0WicrlDHcuQjr11jmvb/0uQ46gbRZFpdes/1+xANwSRTaZh9yvZj6TRuH0aAHoVptfATEoXZ62hOfQaA0OOtWF5VOSFBTL+tCfSIGUSVkLJXL/ZxpaZnQ9usha1cpaE57V4lONBq0noj7kB4ks6ZMsI0qzAuYNiii2dEPGPZEX1wsq1OliJdwF9xdbQKp5Sg7JsoHvAV+I/hWcJ6wKj4vckuyn9X7+qftOC5es+zsLLp5PgLGxayYRcrieE5aQhQMAXa72Eutn6f0X0QXn9EqyjL/4T97htP+t+2pkR5/Bn6Ho4sUK164Jquzphh/Lmqu9OLUFWMh2LGx ondra@ondra"
+
 master_vm:
   cluster: production
   root_password: 123456
