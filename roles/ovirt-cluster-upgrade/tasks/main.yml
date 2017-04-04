@@ -53,7 +53,7 @@
     ovirt_vms:
       auth: "{{ ovirt_auth }}"
       state: stopped
-      name: "{{ item.name }}"
+      name: "{{ item }}"
     with_items:
       - "{{ low_prio_vms | default([]) }}"
     tags:
@@ -84,7 +84,7 @@
     - name: Start again low priority VMs
       ovirt_vms:
         auth: "{{ ovirt_auth }}"
-        name: "{{ item.name }}"
+        name: "{{ item }}"
       with_items:
         - "{{ low_prio_vms | default([]) }}"
       tags:

@@ -2,9 +2,6 @@
   hosts: tag_openshift_master:tag_openshift_node
   gather_facts: yes
 
-  vars:
-    ansible_ssh_pass: 123456
-
   tasks:
     - name: Create new primary partiton
       parted:
@@ -47,6 +44,10 @@
       tags:
         - disk
 
+- name: Prepare masters VMs disks
+  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb
+  gather_facts: yes
+  tasks:
     - name: Register DNS
       lineinfile:
         dest: /etc/hosts
@@ -55,11 +56,12 @@
       with_flattened:
         - "{{ groups['tag_openshift_master'] }}"
         - "{{ groups['tag_openshift_node'] }}"
+        - "{{ groups['tag_openshift_lb'] }}"
       tags:
         - dns
 
 - name: Prepare openshift VMs
-  hosts: tag_openshift_master:tag_openshift_node
+  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb
   gather_facts: no
 
   vars_files:
@@ -73,17 +75,6 @@
       - rhel-7-server-optional-rpms
       - rhel-7-server-ose-3.4-rpms
       - rhel-ha-for-rhel-7-server-rpms
-
-    packages:
-      - NetworkManager
-      - wget
-      - git
-      - net-tools
-      - bind-utils
-      - iptables-services
-      - bridge-utils
-      - atomic-openshift-utils
-      - docker
 
   tasks:
     - name: Register subscriptions
@@ -118,26 +109,6 @@
         - subscriptions
         - repos
 
-    - name: Install packages
-      yum:
-        name: "{{ item }}"
-        state: latest
-      ignore_errors: yes
-      with_items:
-        - "{{ packages }}"
-      tags:
-        - packages
-
-    - name: Ensure NetworkManager
-      service:
-        name: NetworkManager
-        state: started
-        enabled: yes
-
-    # TODO: ensure time sync
-    # Sync SSH keys from masters to all nodes
-    # Ensure company CA’s are installed on all the nodes in the OCP Cluster
-
     - name: Create master inventory for openshift
       add_host:
         name: "{{ item }}"
@@ -153,6 +124,15 @@
         groups: etcd
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
+      tags:
+        - openshift_install
+
+    - name: Create lb inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: lb
+      with_items:
+        - "{{ groups['tag_openshift_lb'] }}"
       tags:
         - openshift_install
 
@@ -173,7 +153,7 @@
         name: "{{ item }}"
         groups: nodes
         openshift_node_labels:
-          region: infra
+          region: masters
           zone: default
       with_items:
         - "{{ groups['tag_openshift_master'] }}"
@@ -185,8 +165,9 @@
   vars:
     deployment_type: openshift-enterprise
     openshift_master_cluster_method: native
-    openshift_master_cluster_hostname: openshift-cluster.example.com
-    openshift_master_cluster_public_hostname: openshift-cluster.example.com
+    openshift_master_cluster_hostname: openshift-lb.example.com
+    openshift_master_cluster_public_hostname: openshift-lb.example.com
+    openshift_master_identity_providers: [{'name': 'allow_all', 'login': 'true', 'challenge': 'true', 'kind': 'AllowAllPasswordIdentityProvider'}]
 
   tags:
     - openshift_install

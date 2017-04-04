@@ -188,32 +188,47 @@ node_vm:
       storage_domain: nfs
       interface: virtio
 
+lb_vm:
+  cluster: production
+  root_password: 123456
+  domain: example.com
+  template: rhel7
+  memory: 1GiB
+  cores: 1
+  disks: []
+
 vms:
   # Node VMs
-  - name: openshift_node_0
+  - name: openshift-node-0
+    tag: openshift_node
+    hostname:
+    profile: "{{ node_vm }}"
+  - name: openshift-node-1
     tag: openshift_node
     profile: "{{ node_vm }}"
-  - name: openshift_node_1
+  - name: openshift-node-2
     tag: openshift_node
     profile: "{{ node_vm }}"
-  - name: openshift_node_2
+  - name: openshift-node-image
     tag: openshift_node
     profile: "{{ node_vm }}"
-  - name: openshift_node_image
-    tag: openshift_node
-    profile: "{{ node_vm }}"
-  - name: openshift_node_router
+  - name: openshift-node-router
     tag: openshift_node
     profile: "{{ node_vm }}"
 
 
   # Master VMs
-  - name: openshift_master_0
+  - name: openshift-master-0
     profile: "{{ master_vm }}"
     tag: openshift_master
-  - name: openshift_master_1
+  - name: openshift-master-1
     tag: openshift_master
     profile: "{{ master_vm }}"
-  - name: openshift_master_2
+  - name: openshift-master-2
     tag: openshift_master
     profile: "{{ master_vm }}"
+
+  # Load balancer
+  - name: openshift-lb
+    tag: openshift_lb
+    profile: "{{ lb_vm }}"

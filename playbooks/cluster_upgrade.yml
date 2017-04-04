@@ -13,6 +13,11 @@
     engine_insecure: false
 
     cluster_name: production
+
+    low_prio_vms:
+      - openshift_master_1
+      - openshift_master_2
+      - openshift_node_0
     
   pre_tasks:
     - name: Login to oVirt
