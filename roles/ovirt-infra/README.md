@@ -1,38 +1,211 @@
-Role Name
+oVirt infra
 =========
 
-A brief description of the role goes here.
+This role setup oVirt infrastructure including: data centers, clusters, networks, hosts, users and groups.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * oVirt Python SDK version 4
+ * Ansible version 2.3
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+From [ovirt-datacenters]:
+
+| Name                                | Default value         |                                      |
+|-------------------------------------|-----------------------|--------------------------------------|
+| data_center_name                    | UNDEF                 | Name of the data center              |
+| data_center_description             | UNDEF                 | Description of the data center       |
+| data_center_local                   | false                 | Whether the data center should be shared or local |
+| compatibility_version               | UNDEF                 | Compatibility version of data center |
+
+From [ovirt-clusters]:
+
+This role accept only one variable called `clusters`. To see example of this variable please check the role's documentation.
+
+From [ovirt-hosts]:
+
+This role accept only one variable called `hosts`. To see example of this variable please check the role's documentation.
+
+From [ovirt-networks]:
+
+This role accept variable called `logical_networks`, which setup logical networks in oVirt. To see example of this variable please check the role's documentation.
+This role accept variable called `host_networks`, which setup host networks in oVirt. To see example of this variable please check the role's documentation.
+
+From [ovirt-storages]:
+
+This role accept variable called `storages`, which setup different storages in oVirt. To see example of this variable please check the role's documentation.
+
+From [ovirt-aaa-jdbc]:
+
+This role accept variable called `users` and `groups`, which creates users and groups in AAA jdbc extension. To see example of this variable please check the role's documentation.
+
+From [ovirt-permissions]:
+
+This role accept variable called `permissions`, which manges permissions of users and groups. To see example of this variable please check the role's documentation.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+ * [ovirt-datacenters]
+ * [ovirt-clusters]
+ * [ovirt-hosts]
+ * [ovirt-networks]
+ * [ovirt-storages]
+ * [ovirt-aaa-jdbc]
+ * [ovirt-permissions]
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+---
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  vars:
+     engine_url: https://ondra.local/ovirt-engine/api
+     engine_user: admin@internal
+     engine_password: 123456
+     engine_cafile: /etc/pki/ovirt-engine/ca.pem
+     
+     data_center_name: mydatacenter
+     compatibility_version: 4.1
+     
+     clusters:
+      - name: production
+        cpu_type: Intel Conroe Family
+        profile: production
+     
+     hosts:
+      - name: myhost
+        address: 1.2.3.4
+        cluster: production
+        password: 123456
+      - name: myhost1
+        address: 5.6.7.8
+        cluster: production
+        password: 123456
+     
+     storages:
+      nfs:
+       master: true
+       state: present
+       mynfs:
+        address: 10.11.12.13
+        path: /the_path
+       myiscsi:
+         state: present
+         iscsi:
+           target: iqn.2014-07.org.ovirt:storage
+           port: 3260
+           address: 100.101.102.103
+           username: username
+           password: password
+           lun_id: 3600140551fcc8348ea74a99b6760fbb4
+       mytemplates:
+         domain_function: export
+         nfs:
+           address: 100.101.102.104
+           path: /exports/nfs/exported
+       myiso:
+         domain_function: iso
+         nfs:
+           address: 100.101.102.105
+           path: /exports/nfs/iso
+     
+     logical_networks:
+       - name: mynetwork
+         clusters:
+           - name: development
+             assigned: yes
+             required: no
+             display: no
+             migration: yes
+             gluster: no
+     
+     host_networks:
+       - name: myhost1
+         check: true
+         save: true
+         bond:
+           name: bond0
+           mode: 2
+           interfaces:
+             - eth2
+             - eth3
+         networks:
+           - name: mynetwork
+             boot_protocol: dhcp
+     
+     users:
+      - name: john.doe
+        authz_name: internal-authz
+        password: 123456
+        valid_to: "2018-01-01 00:00:00Z"
+      - name: joe.doe
+        authz_name: internal-authz
+        password: 123456
+        valid_to: "2018-01-01 00:00:00Z"
+     
+     user_groups:
+      - name: admins
+        authz_name: internal-authz
+        users:
+         - john.doe
+         - joe.doe
+     
+     permissions:
+      - state: present
+        user_name: john.doe
+        authz_name: internal-authz
+        role: UserROle
+        object_type: cluster
+        object_name: production
+     
+      - state: present
+        group_name: admins
+        authz_name: internal-authz
+        role: UserVmManager
+        object_type: cluster
+        object_name: production
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile | default(omit) }}"
+        insecure: "{{ engine_insecure | default(true) }}"
+      tags:
+        - always
+
+  roles:
+    - ovirt-infra
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+```
 
 License
 -------
 
 BSD
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+[ovirt-aaa-jdbc]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-jdbc/README.md
+[ovirt-clusters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-clusters/README.md
+[ovirt-datacenters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-datacenters/README.md
+[ovirt-hosts]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-hosts/README.md
+[ovirt-networks]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-networks/README.md
+[ovirt-permissions]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-permissions/README.md
+[ovirt-storages]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-storages/README.md

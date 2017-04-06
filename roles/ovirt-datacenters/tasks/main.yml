@@ -4,8 +4,8 @@
     auth: "{{ ovirt_auth }}"
     state: present
     name: "{{ data_center_name }}"
-    description: "{{ dc_description | default(omit) }}"
-    local: "{{ dc_local | default(false) }}"
+    description: "{{ data_center_description | default(omit) }}"
+    local: "{{ data_center_local | default(false) }}"
     compatibility_version: "{{ compatibility_version }}"
   tags:
     - datacenters
