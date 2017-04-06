@@ -1,6 +1,8 @@
-# ovirt-ansible-roles
+[![Build Status](https://travis-ci.org/machacekondra/ovirt-ansible-roles.svg?branch=master)](https://travis-ci.org/machacekondra/ovirt-ansible-roles)
 
-Ansible roles to build oVirt infrastracture.
+# oVirt Ansible
+
+This repo contains various Ansible roles to manage oVirt.
 
 ## Implemented roles
 
@@ -213,9 +215,9 @@ permissions:
 ```
 
 [ovirt-aaa-jdbc]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-jdbc/README.md
-[ovirt-clusters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-clusters/README.md
-[ovirt-datacenters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-datacenters/README.md
-[ovirt-hosts]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-hosts/README.md
-[ovirt-networks]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-networks/README.md
-[ovirt-permissions]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-permissions/README.md
-[ovirt-storages]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-storages/README.md
+[ovirt-clusters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-clusters/README.md
+[ovirt-datacenters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-datacenters/README.md
+[ovirt-hosts]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-hosts/README.md
+[ovirt-networks]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-networks/README.md
+[ovirt-permissions]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-permissions/README.md
+[ovirt-storages]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-storages/README.md

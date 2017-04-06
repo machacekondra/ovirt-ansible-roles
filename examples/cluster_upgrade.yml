@@ -1,9 +1,8 @@
 ---
 - name: oVirt infra
-  #hosts: engine
   hosts: localhost
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   vars:
     engine_url: https://ondra.local/ovirt-engine/api
@@ -18,7 +17,7 @@
       - openshift_master_1
       - openshift_master_2
       - openshift_node_0
-    
+
   pre_tasks:
     - name: Login to oVirt
       ovirt_auth:
@@ -39,4 +38,4 @@
         state: absent
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
-        - always 
+        - always

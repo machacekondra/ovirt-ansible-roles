@@ -1,13 +1,12 @@
 ---
 - name: oVirt infra
-  #hosts: engine
   hosts: localhost
   connection: local
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ovirt_infra_vars.yml
-    
+
   pre_tasks:
     - name: Login to oVirt
       ovirt_auth:
@@ -30,4 +29,4 @@
         state: absent
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
-        - always 
+        - always

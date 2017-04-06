@@ -1,6 +1,7 @@
+---
 - name: Prepare VMs disks
   hosts: tag_openshift_master:tag_openshift_node:tag_openshift_infra
-  gather_facts: yes
+  gather_facts: true
 
   tasks:
     - name: Create new primary partiton
@@ -20,7 +21,7 @@
 
 - name: Prepare VMs disks
   hosts: tag_openshift_master
-  gather_facts: yes
+  gather_facts: true
   tasks:
     - name: Mount etcd
       mount:
@@ -33,7 +34,7 @@
 
 - name: Prepare VMs disks
   hosts: tag_openshift_node:tag_openshift_infra
-  gather_facts: yes
+  gather_facts: true
   tasks:
     - name: Mount origin
       mount:
@@ -46,7 +47,7 @@
 
 - name: Prepare VMs disks
   hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb:tag_openshift_infra
-  gather_facts: yes
+  gather_facts: true
   tasks:
     - name: Register DNS
       lineinfile:
@@ -62,7 +63,7 @@
 
 - name: Prepare openshift VMs
   hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb:tag_openshift_infra
-  gather_facts: no
+  gather_facts: false
 
   vars_files:
     - ../secret.yml
@@ -95,7 +96,7 @@
 
     - name: Disable all repos
       shell: subscription-manager repos --disable=*
-      #when: pool_res.changed
+      when: pool_res.changed
       tags:
         - subscriptions
         - repos
