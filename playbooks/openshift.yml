@@ -1,5 +1,5 @@
-- name: Prepare masters VMs disks
-  hosts: tag_openshift_master:tag_openshift_node
+- name: Prepare VMs disks
+  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_infra
   gather_facts: yes
 
   tasks:
@@ -18,34 +18,34 @@
       tags:
         - disk
 
+- name: Prepare VMs disks
+  hosts: tag_openshift_master
+  gather_facts: yes
+  tasks:
     - name: Mount etcd
       mount:
         name: /var/lib/etcd
         src: /dev/vdb
         fstype: ext4
         state: mounted
-      delegate_to: "{{ item }}"
-      ignore_errors: yes
-      with_items:
-        - "{{ groups['tag_openshift_master'] }}"
       tags:
         - disk
 
+- name: Prepare VMs disks
+  hosts: tag_openshift_node:tag_openshift_infra
+  gather_facts: yes
+  tasks:
     - name: Mount origin
       mount:
         name: /var/lib/origin
         src: /dev/vdb
         fstype: ext4
         state: mounted
-      delegate_to: "{{ item }}"
-      ignore_errors: yes
-      with_items:
-        - "{{ groups['tag_openshift_node'] }}"
       tags:
         - disk
 
-- name: Prepare masters VMs disks
-  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb
+- name: Prepare VMs disks
+  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb:tag_openshift_infra
   gather_facts: yes
   tasks:
     - name: Register DNS
@@ -61,14 +61,13 @@
         - dns
 
 - name: Prepare openshift VMs
-  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb
+  hosts: tag_openshift_master:tag_openshift_node:tag_openshift_lb:tag_openshift_infra
   gather_facts: no
 
   vars_files:
     - ../secret.yml
 
   vars:
-    ansible_ssh_pass: 123456
     rhn_subscriptions:
       - rhel-7-server-rpms
       - rhel-7-server-extras-rpms
@@ -96,7 +95,7 @@
 
     - name: Disable all repos
       shell: subscription-manager repos --disable=*
-      when: pool_res.changed
+      #when: pool_res.changed
       tags:
         - subscriptions
         - repos
@@ -133,6 +132,18 @@
         groups: lb
       with_items:
         - "{{ groups['tag_openshift_lb'] }}"
+      tags:
+        - openshift_install
+
+    - name: Create nodes inventory for openshift
+      add_host:
+        name: "{{ item }}"
+        groups: nodes
+        openshift_node_labels:
+          region: infra
+          zone: west
+      with_items:
+        - "{{ groups['tag_openshift_infra'] }}"
       tags:
         - openshift_install
 

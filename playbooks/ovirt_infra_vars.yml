@@ -206,14 +206,12 @@ vms:
   - name: openshift-node-1
     tag: openshift_node
     profile: "{{ node_vm }}"
-  - name: openshift-node-2
-    tag: openshift_node
-    profile: "{{ node_vm }}"
+  # Infra VMs
   - name: openshift-node-image
-    tag: openshift_node
+    tag: openshift_infra
     profile: "{{ node_vm }}"
   - name: openshift-node-router
-    tag: openshift_node
+    tag: openshift_infra
     profile: "{{ node_vm }}"
 
 
@@ -222,9 +220,6 @@ vms:
     profile: "{{ master_vm }}"
     tag: openshift_master
   - name: openshift-master-1
-    tag: openshift_master
-    profile: "{{ master_vm }}"
-  - name: openshift-master-2
     tag: openshift_master
     profile: "{{ master_vm }}"
 
