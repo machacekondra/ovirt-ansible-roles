@@ -33,9 +33,9 @@
       - name: apache-vm
         tag: httpd
         profile: "{{ httpd_vm }}"
-        #- name: postgresql-vm
-        #- tag: db
-        #- profile: "{{ db_vm }}"
+      - name: postgresql-vm
+        tag: db
+        profile: "{{ db_vm }}"
 
   roles:
     - ovirt-vm-infra

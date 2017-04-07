@@ -1,3 +1,4 @@
+---
 - name: oVirt image template
   hosts: localhost
   connection: local
