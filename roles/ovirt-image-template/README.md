@@ -22,6 +22,7 @@ Role Variables
 | template_name      | mytemplate            | Name of the template |
 | template_memory    | 2GiB                  | Amount of memory of template |
 | template_cpu       | 1                     | Number of CPU of template  |
+| template_disk_storage | UNDEF              | Name of storage domain where disk should be created. If not specified the storage domain is choosen automatically |
 | template_disk_size | 10GiB                 | Size of the template disk  |
 | template_disk_format | cow                 | Format of the template disk  |
 | template_disk_interface | virtio           | Interface of the template disk |

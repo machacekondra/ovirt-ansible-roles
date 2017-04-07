@@ -197,7 +197,6 @@ vms:
  # Node VMs
  - name: openshift-node-0
    tag: openshift_node
-   hostname:
    profile: "{{ node_vm }}"
  - name: openshift-node-1
    tag: openshift_node

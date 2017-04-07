@@ -1,45 +1,7 @@
 ---
-master_vm:
-  tag: openshift_master
-  cluster: production
-  root_password: 123456
-  domain: example.com
-  template: rhel7
-  memory: 1GiB
-  cores: 1
-  disks:
-    - size: 5GiB
-      storage_domain: nfs
-      interface: virtio
-      name: etcd_disk
-
-node_vm:
-  tag: openshift_node
-  cluster: production
-  root_password: 123456
-  domain: example.com
-  template: rhel7
-  memory: 1GiB
-  cores: 1
-  disks:
-    - size: 10GiB
-      name: origin_disk
-      storage_domain: nfs
-      interface: virtio
-    - size: 10GiB
-      name: data_disk
-      storage_domain: nfs
-      interface: virtio
-
-vms:
-  # Node VMs
-  - name: openshift_node_0
-    profile: "{{ node_vm }}"
-  - name: openshift_node_1
-    profile: "{{ node_vm }}"
-
-  # Master VMs
-  - name: openshift_master_0
-    profile: "{{ master_vm }}"
-  - name: openshift_master_1
-    profile: "{{ master_vm }}"
+debug_vm_create: false
+wait_for_ip: true
+vm_nics:
+  - nic_name: eth0
+    nic_boot_protocol: dhcp
+    nic_on_boot: true
