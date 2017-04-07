@@ -1,38 +1,57 @@
-Role Name
+oVirt cluster upgrade
 =========
 
-A brief description of the role goes here.
+This role will iterate through all hosts in cluster and upgrades them.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * Ansible version 2.3 or higher
+ * Python SDK version 4 or higher
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+| Name               | Default value         |                            |
+|--------------------|-----------------------|----------------------------| 
+| cluster            | Default               | Name of the cluster to be upgraded |
+| low_prio_vms       | UNDEF                 | List of VM names to be stopped before upgrade |
+| force_pinned       | false                 | If true the pinned to host VMs will be stopped |
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+---
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  vars:
+    engine_url: https://ondra.local/ovirt-engine/api
+    engine_user: admin@internal
+    engine_password: 123456
+    engine_cafile: /home/omachace/ovirt-engine41/etc/pki/ovirt-engine/ca.pem
+
+    cluster_name: production
+    low_prio_vms:
+      - openshift_master_0
+      - openshift_node_0
+      - openshift-node-image
+
+  roles:
+    - ovirt-cluster-upgrade
+```
+
+[![asciicast](https://asciinema.org/a/111757.png)](https://asciinema.org/a/111757)
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
