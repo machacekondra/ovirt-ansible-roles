@@ -68,7 +68,7 @@ Example Playbook
   gather_facts: false
 
   vars:
-     engine_url: https://ondra.local/ovirt-engine/api
+     engine_url: https://ovirt-engine.example.com/ovirt-engine/api
      engine_user: admin@internal
      engine_password: 123456
      engine_cafile: /etc/pki/ovirt-engine/ca.pem
@@ -92,13 +92,13 @@ Example Playbook
         password: 123456
      
      storages:
-      nfs:
-       master: true
-       state: present
-       mynfs:
-        address: 10.11.12.13
-        path: /the_path
-       myiscsi:
+       mynfsstorage:
+         master: true
+         state: present
+         nfs:
+           address: 10.11.12.13
+           path: /the_path
+       myiscsistorage:
          state: present
          iscsi:
            target: iqn.2014-07.org.ovirt:storage
@@ -112,7 +112,7 @@ Example Playbook
          nfs:
            address: 100.101.102.104
            path: /exports/nfs/exported
-       myiso:
+       myisostorage:
          domain_function: iso
          nfs:
            address: 100.101.102.105
@@ -197,10 +197,12 @@ Example Playbook
         - always
 ```
 
+[![asciicast](https://asciinema.org/a/112415.png)](https://asciinema.org/a/112415)
+
 License
 -------
 
-BSD
+Apache License 2.0
 
 [ovirt-aaa-jdbc]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-aaa-jdbc/README.md
 [ovirt-clusters]: https://github.com/machacekondra/ovirt-ansible-roles/blob/master/roles/ovirt-clusters/README.md

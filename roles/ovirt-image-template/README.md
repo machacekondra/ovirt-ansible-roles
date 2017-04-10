@@ -44,7 +44,7 @@ Example Playbook
   gather_facts: false
 
   vars:
-    engine_url: https://ondra.local/ovirt-engine/api
+    engine_url: https://ovirt-engine.example.com/ovirt-engine/api
     engine_user: admin@internal
     engine_password: 123456
     engine_cafile: /etc/pki/ovirt-engine/ca.pem
@@ -52,9 +52,9 @@ Example Playbook
     qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
     template_cluster: production
     template_name: centos7_template
-    template_memory: 2GiB
+    template_memory: 4GiB
     template_cpu: 2
-    template_disk_size: 20GiB
+    template_disk_size: 10GiB
     template_disk_storage: mydata
 
   roles:
@@ -66,6 +66,6 @@ Example Playbook
 License
 -------
 
-BSD
+Apache License 2.0
 
 [ovirt-imageio]: http://www.ovirt.org/develop/release-management/features/storage/image-upload/

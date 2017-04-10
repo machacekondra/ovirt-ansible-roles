@@ -20,8 +20,6 @@
 
   roles:
     - ovirt-infra
-    - ovirt-template-image
-    - ovirt-virt-infra
 
   post_tasks:
     - name: Logout from oVirt

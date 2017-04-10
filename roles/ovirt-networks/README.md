@@ -89,4 +89,4 @@ Example Playbook
 License
 -------
 
-BSD
+Apache License 2.0

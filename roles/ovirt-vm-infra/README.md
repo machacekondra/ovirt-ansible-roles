@@ -35,7 +35,7 @@ The `profile` dictionary can contain following attributes:
 | memory             | 2GiB                  | Amount of the memory of the VM               |
 | cores              | 1                     | Number of CPU cores of the VM                |
 | disks              | UNDEF                 | Dictionary specifing additional VM disks     |
-| nics               | DHCP, eth0, on_boot   | List of dictinaries specifing NICs of VM     |
+| nics               | UNDEF                 | List of dictinaries specifing NICs of VM     |
 | ssh_key            | UNDEF                 | SSH key to be deployed to VM                 |
 | domain             | UNDEF                 | The domain of the VM                         |
 | root_password      | UNDEF                 | root password of the VM                      |
@@ -65,7 +65,7 @@ Example Playbook
   gather_facts: false
 
   vars:
-    engine_url: https://ondra.local/ovirt-engine/api
+    engine_url: https://ovirt-engine.example.com/ovirt-engine/api
     engine_user: admin@internal
     engine_password: 123456
     engine_cafile: /home/omachace/Downloads/ca.pem
@@ -105,4 +105,4 @@ Example Playbook
 License
 -------
 
-BSD
+Apache License 2.0

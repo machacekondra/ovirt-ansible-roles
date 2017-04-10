@@ -26,7 +26,7 @@
         authorized_ssh_keys: "{{ item.profile.ssh_key | default('') }}"
         user_name: root
         root_password: "{{ item.profile.root_password | default(omit) }}"
-      cloud_init_nics: "{{ item.profile.nics | default(vm_nics) }}"
+      cloud_init_nics: "{{ item.profile.nics | default([]) }}"
     with_items:
       - "{{ vms }}"
     async: 800

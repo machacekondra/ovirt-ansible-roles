@@ -34,7 +34,7 @@ Example Playbook
   gather_facts: false
 
   vars:
-    engine_url: https://ondra.local/ovirt-engine/api
+    engine_url: https://ovirt-engine.example.com/ovirt-engine/api
     engine_user: admin@internal
     engine_password: 123456
     engine_cafile: /home/omachace/ovirt-engine41/etc/pki/ovirt-engine/ca.pem
@@ -54,4 +54,4 @@ Example Playbook
 License
 -------
 
-BSD
+Apache License 2.0
