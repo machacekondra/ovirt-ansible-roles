@@ -1,38 +1,79 @@
-Role Name
-=========
+oVirt storages
+==============
 
-A brief description of the role goes here.
+This role setup oVirt storages.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * oVirt Python SDK version 4
+ * Ansible version 2.3
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The value of item in `storages` dictionary can contain following parameters (the key is always a name of the storage):
+
+| Name            | Default value  | Description                           |
+|-----------------|----------------|---------------------------------------|
+| master          | false          | If true the storage will be added as first, meaning it will be master storage |
+| domain_function | data           | Function of the storage domain (iso, export or data) |
+| nfs             | UNDEF          | Dictionary defining NFS storage |
+| iscsi           | UNDEF          | Dictionary defining iSCSI storage |
+| posixfs         | UNDEF          | Dictionary defining PosixFS storage |
+| fcp             | UNDEF          | Dictionary defining FCP storage |
+| glusterfs       | UNDEF          | Dictionary defining glusterFS storage |
+
+More information about storages parameters can be found [here](http://docs.ansible.com/ansible/ovirt_storage_domains_module.html).
+
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  vars:
+    storages:
+      mynfsstorage:
+       master: true
+       state: present
+       nfs:
+        address: 1.2.3.4
+        path: /path
+      myiscsistorage:
+        state: present
+        iscsi:
+          target: iqn.2014-07.org.ovirt:storage
+          port: 3260
+          address: 10.11.12.13
+          username: username
+          password: password
+          lun_id: 3600140551fcc8348ea74a99b6760fbb4
+      myexporttemplates:
+        domain_function: export
+        nfs:
+          address: 100.101.102.103
+          path: /templates
+      myisostorage:
+        domain_function: iso
+        nfs:
+          address: 111.222.111.222
+          path: /iso
+
+  roles:
+    - ovirt-storages
+```
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

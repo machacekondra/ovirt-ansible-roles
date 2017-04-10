@@ -1,38 +1,64 @@
-Role Name
-=========
+oVirt permissions
+=================
 
-A brief description of the role goes here.
+This role setup oVirt permissions.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * oVirt Python SDK version 4
+ * Ansible version 2.3
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The item in `permissions` list can contain following parameters:
+
+| Name          | Default value  | Description                |
+|---------------|----------------|----------------------------|
+| state         | present        | State of the permission    |
+| user_name     | UNDEF          | User name of user to manage permission |
+| group_name    | UNDEF          | Name of group to manage permission |
+| authz_name    | UNDEF          | Name of the authorization provider of the group or user |
+| role          | UNDEF          | Role to be assigned to user or group |
+| object_type   | UNDEF          | The object type which should be used to assign permission |
+| object_name   | UNDEF          | Name of the object where permission should be assigned |
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  vars:
+    permissions:
+      - state: present
+        user_name: user1
+        authz_name: internal-authz
+        role: UserRole
+        object_type: cluster
+        object_name: production
+   
+      - state: present
+        group_name: group1
+        authz_name: internal-authz
+        role: UserRole
+        object_type: cluster
+        object_name: production
+
+  roles:
+    - ovirt-permissions
+```
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

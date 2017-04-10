@@ -1,72 +1,71 @@
-Add internal users/groups to oVirt
-==================================
+oVirt AAA JDBC
+==============
 
-This role manages the internal users and groups in oVirt.
+This role manages users and groups in AAA JDBC extension.
 
 Requirements
 ------------
 
-None
-
+ * Ansible version 2.2
 
 Role Variables
 --------------
 
-```yaml
----
-users: List of dictionaries that describe the users to be added.
-       The dictionary can contain following values:
-         - state: present/absent
-         - name: name of the user
-         - authz_name: name of the authorization provider where user belongs
-         - password: the password of the user
-         - valid_to: password expiration date
-user_groups: List of dictionaries that describe the groups to be added.
-             The dictionary can contain following values:
-               - state: present/absent
-               - name: name of the group
-               - authz_name: name of the authorization provider where group belongs
-               - users: list of user names, which group should have
-```
+The item in `users` list can contain following parameters:
+
+| Name          | Default value  | Description                           |
+|---------------|----------------|---------------------------------------|
+| state         | present        | Whether the user should be present or absent |
+| name          | UNDEF          | Name of the user                      |
+| authz_name    | UNDEF          | Authorization provider of the user    |
+| password      | UNDEF          | Password of the user                  |
+| valid_to      | UNDEF          | The date until the account should be valid |
+
+The item in `user_groups` list can contain following parameters:
+
+| Name          | Default value  | Description                           |
+|---------------|----------------|---------------------------------------|
+| state         | present        | Whether the group should be present or absent |
+| name          | UNDEF          | Name of the group                     |
+| authz_name    | UNDEF          | Authorization provider of the group   |
+| users         | UNDEF          | List of user names which should be part of this group |
 
 Dependencies
 ------------
 
-None
-
+No.
 
 Example Playbook
 ----------------
 
 ```yaml
----
-hosts: engine
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
   vars:
     users:
-      - name: user1
-        authz_name: internal-authz
-        password: 123456
-        valid_to: "2025-01-01 00:00:00Z"
-      - name: user2
-        authz_name: internal-authz
-        password: 123456
-        valid_to: "2025-01-01 00:00:00Z"
+     - name: user1
+       authz_name: internal-authz
+       password: 1234568
+       valid_to: "2018-01-01 00:00:00Z"
+     - name: user2
+       authz_name: internal-authz
+       password: 1234568
+       valid_to: "2018-01-01 00:00:00Z"
     
     user_groups:
-      - name: group1
-        authz_name: internal-authz
-        users:
-          - user1
-   
+     - name: group1
+       authz_name: internal-authz
+       users:
+        - user1
+
   roles:
     - ovirt-aaa-jdbc
 ```
 
 License
 -------
+
 BSD
-
-Author Information
-------------------
-
-Ondra Machacek (@machacekondra)

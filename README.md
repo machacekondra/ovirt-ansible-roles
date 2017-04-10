@@ -4,16 +4,21 @@
 
 This repo contains various Ansible roles to manage oVirt.
 
-## Functional roles
+## Logical roles
+
+Logical roles can group the component roles or implement specific scenario on top of
+more oVirt components.
 
 * [ovirt-infra]
 * [ovirt-image-template]
 * [ovirt-vm-infra]
 * [ovirt-cluster-upgrade]
 
-## Helper logical roles
+## Component roles
 
-[ovirt-infra] role implements following helper roles:
+Component role provides a lifecycle of specific oVirt component.
+
+[ovirt-infra] role implements following helper component roles:
 
  * [ovirt-datacenters]
  * [ovirt-clusters]

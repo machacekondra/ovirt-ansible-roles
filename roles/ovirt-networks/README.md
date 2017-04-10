@@ -1,38 +1,92 @@
-Role Name
-=========
+oVirt networks
+==============
 
-A brief description of the role goes here.
+This role setup oVirt networks.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+ * oVirt Python SDK version 4
+ * Ansible version 2.3
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+The `data_center_name` specify the data center name of the network.
+
+The item in `logical_networks` list can contain following parameters:
+
+| Name          | Default value  | Description                           |
+|---------------|----------------|---------------------------------------|
+| name          | UNDEF          | Name of the network                   |
+| state         | present        | State of the network                  |
+| vlan_tag      | UNDEF          | IP or FQDN of the host                |
+| vm_network    | UNDEF          | Root password of the host             |
+| mtu           | UNDEF          | Cluster which host should connect     |
+| description   | 1200           | Maximum wait time for host to be UP   |
+| clusters      | 20             | Polling interval to check host status |
+
+More information about logical networks can be found [here](http://docs.ansible.com/ansible/ovirt_networks_module.html).
+
+The item in `host_networks` list can contain following parameters:
+
+| Name          | Default value  | Description                           |
+|---------------|----------------|---------------------------------------|
+| name          | UNDEF          | Name of the host                      |
+| state         | UNDEF          | State of the host networks            |
+| check         | UNDEF          | If true verify connectivity between host and engine |
+| save          | UNDEF          | If true network configuration will be persistent, by default they are temporary |
+| bond          | UNDEF          | Dictionary describing network bond |
+| networks      | UNDEF          | List of dictionary describing networks to be attached to interface or bond |
+| labels        | UNDEF          | List of names of the network label to be assigned to bond or interface |
+| interface     | UNDEF          | Name of the network interface where logical network should be attached |
+
+More information about host networks can be found [here](http://docs.ansible.com/ansible/ovirt_host_networks_module.html).
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- name: oVirt infra
+  hosts: localhost
+  connection: local
+  gather_facts: false
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  vars:
+   logical_networks:
+     - name: mynetwork
+       clusters:
+         - name: development
+           assigned: yes
+           required: no
+           display: no
+           migration: yes
+           gluster: no
+
+   host_networks:
+     - name: myhost1
+       check: true
+       save: true
+       bond:
+         name: bond0
+         mode: 2
+         interfaces:
+           - eth2
+           - eth3
+       networks:
+         - name: mynetwork
+           boot_protocol: dhcp
+
+  roles:
+    - ovirt-networks
+```
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
