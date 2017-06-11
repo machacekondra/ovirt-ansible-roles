@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/machacekondra/ovirt-ansible-roles.svg?branch=master)](https://travis-ci.org/machacekondra/ovirt-ansible-roles)
 
+# *IMPORTANT*
+This repository was moved to https://github.com/ovirt/ovirt-ansible
+
 # oVirt Ansible
 
 This repo contains various Ansible roles to manage oVirt.
